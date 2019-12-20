@@ -9,6 +9,24 @@ public class User {
 	private String firstName;
 	private String lastName;
 	private String emailId;
+	private String password;
+	private String userType;
+
+	public String getPassword() {
+		return password;
+	}
+
+	public void setPassword(String password) {
+		this.password = password;
+	}
+
+	public String getUserType() {
+		return userType;
+	}
+
+	public void setUserType(String userType) {
+		this.userType = userType;
+	}
 
 	public String getEmailId() {
 		return emailId;
@@ -25,6 +43,13 @@ public class User {
 	public User(String firstName, String lastName) {
 		this.firstName = firstName;
 		this.lastName = lastName;
+	}
+
+	public User(String firstName, String lastName, String emailId, String password) {
+		this.firstName = firstName;
+		this.lastName = lastName;
+		this.emailId = emailId;
+		this.password = password;
 	}
 
 	public String getId() {

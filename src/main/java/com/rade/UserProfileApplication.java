@@ -1,4 +1,4 @@
-package com.rade.userprofile;
+package com.rade;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.CommandLineRunner;
@@ -32,8 +32,8 @@ public class UserProfileApplication implements CommandLineRunner {
 		userRepository.deleteAll();
 
 		// save a couple of customers
-		userRepository.save(new User("Alice", "Smith"));
-		userRepository.save(new User("Bob", "Smith"));
+		userRepository.save(new User("Alice", "Smith","alice@gmail.com","user123"));
+		userRepository.save(new User("Bob", "Smith","bob@gmail.com","user321"));
 
 		// fetch all customers
 		System.out.println("Customers found with findAll():");
