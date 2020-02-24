@@ -9,8 +9,12 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 
 import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.Jwts;
+import io.jsonwebtoken.MalformedJwtException;
 import io.jsonwebtoken.SignatureAlgorithm;
+import io.jsonwebtoken.SignatureException;
+import io.jsonwebtoken.UnsupportedJwtException;
 
 @Service
 public class JWTUtil {
@@ -30,7 +34,8 @@ public class JWTUtil {
 		return claimsResolver.apply(claims);
 	}
 
-	private Claims extractAllClaims(String token) {
+	private Claims extractAllClaims(String token) throws MalformedJwtException, UnsupportedJwtException,
+			ExpiredJwtException, SignatureException, IllegalArgumentException {
 		return Jwts.parser().setSigningKey(SECRET_KEY).parseClaimsJws(token).getBody();
 	}
 

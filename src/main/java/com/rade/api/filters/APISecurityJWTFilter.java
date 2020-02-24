@@ -8,6 +8,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -15,8 +16,11 @@ import org.springframework.security.web.authentication.WebAuthenticationDetailsS
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
+import com.rade.api.APIConstants;
 import com.rade.api.security.APIUserSecurityDetailsService;
 import com.rade.api.security.JWTUtil;
+
+import io.jsonwebtoken.JwtException;
 
 @Component
 public class APISecurityJWTFilter extends OncePerRequestFilter {
@@ -31,27 +35,35 @@ public class APISecurityJWTFilter extends OncePerRequestFilter {
 	protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
 			throws ServletException, IOException {
 
-		final String authorizationHeader = request.getHeader("Authorization");
+		final String authorizationHeader = request.getHeader(APIConstants.AUTHORIZATION_HEADER);
 		String userName = null;
 		String jwt = null;
 
-		if (authorizationHeader != null && authorizationHeader.startsWith("Bearer ")) {
-			jwt = authorizationHeader.substring(7);
-			userName = jwtUtil.extractUsername(jwt);
-		}
+		try {
 
-		if (userName != null && SecurityContextHolder.getContext().getAuthentication() == null) {
+			if (authorizationHeader != null && authorizationHeader.startsWith("Bearer ")) {
+				jwt = authorizationHeader.substring(7);
+				userName = jwtUtil.extractUsername(jwt);
 
-			UserDetails userDetails = this.userDetailsService.loadUserByUsername(userName);
+				if (userName != null && SecurityContextHolder.getContext().getAuthentication() == null) {
 
-			if (jwtUtil.validateToken(jwt, userDetails)) {
+					UserDetails userDetails = this.userDetailsService.loadUserByUsername(userName);
 
-				UsernamePasswordAuthenticationToken usernamePasswordAuthenticationToken = new UsernamePasswordAuthenticationToken(
-						userDetails, null, userDetails.getAuthorities());
-				usernamePasswordAuthenticationToken
-						.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
-				SecurityContextHolder.getContext().setAuthentication(usernamePasswordAuthenticationToken);
+					if (jwtUtil.validateToken(jwt, userDetails)) {
+
+						UsernamePasswordAuthenticationToken usernamePasswordAuthenticationToken = new UsernamePasswordAuthenticationToken(
+								userDetails, null, userDetails.getAuthorities());
+						usernamePasswordAuthenticationToken
+								.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
+						SecurityContextHolder.getContext().setAuthentication(usernamePasswordAuthenticationToken);
+					}
+				}
+			} else {
+				System.out.println("Authenticate yourself...!!");
+				throw new AccessDeniedException("Authenticate yourself...!!");
 			}
+		} catch (JwtException e) {
+			throw new AccessDeniedException("JWT enga pa..??");
 		}
 
 		filterChain.doFilter(request, response);

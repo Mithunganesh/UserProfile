@@ -14,6 +14,7 @@ import org.springframework.security.crypto.password.NoOpPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
+import com.rade.api.exception.SecureAPIAccessDeniedHandler;
 import com.rade.api.filters.APISecurityJWTFilter;
 
 @EnableWebSecurity
@@ -26,6 +27,12 @@ public class APISecurityConfigurer extends WebSecurityConfigurerAdapter {
 	@Autowired
 	APISecurityJWTFilter jwtRequestFilter;
 
+	@Autowired
+	SecureAPIAccessDeniedHandler accessDeniedHandler;
+
+	@Autowired
+	APISecurityAuthEntryPoint authEntryPoint;
+
 	@Override
 	protected void configure(AuthenticationManagerBuilder auth) throws Exception {
 		auth.userDetailsService(apiUserDetailsService);
@@ -35,9 +42,10 @@ public class APISecurityConfigurer extends WebSecurityConfigurerAdapter {
 	protected void configure(HttpSecurity http) throws Exception {
 		http.csrf().disable().authorizeRequests().antMatchers("/authenticate").permitAll().anyRequest().authenticated()
 				.antMatchers("/user/add").hasRole("ADMIN").antMatchers("/user/get/*").hasAnyRole("ADMIN", "USER").and()
-				.formLogin().and().exceptionHandling().and().sessionManagement()
-				.sessionCreationPolicy(SessionCreationPolicy.STATELESS);
-	
+				.formLogin().and().exceptionHandling().and().exceptionHandling()
+				.accessDeniedHandler(accessDeniedHandler).authenticationEntryPoint(authEntryPoint).and()
+				.sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS);
+
 		http.addFilterBefore(jwtRequestFilter, UsernamePasswordAuthenticationFilter.class);
 	}
 
